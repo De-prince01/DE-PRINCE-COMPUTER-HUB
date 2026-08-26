@@ -1,0 +1,90 @@
+services:
+  app:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: deprince-hub/app
+    container_name: deprince-hub-app
+    restart: unless-stopped
+    working_dir: /var/www
+    environment:
+      APP_ENV: local
+      APP_DEBUG: "true"
+      APP_URL: http://localhost:8080
+      FRONTEND_URL: http://localhost:5173
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: deprince
+      DB_USERNAME: deprince
+      DB_PASSWORD: secret
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      MAIL_HOST: mailhog
+      MAIL_PORT: 1025
+    volumes:
+      - ./backend:/var/www
+    depends_on:
+      - postgres
+      - redis
+      - mailhog
+    networks:
+      - deprince-hub
+
+  nginx:
+    image: nginx:1.25-alpine
+    container_name: deprince-hub-nginx
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    volumes:
+      - ./backend:/var/www
+      - ./docker/nginx/conf.d:/etc/nginx/conf.d
+    depends_on:
+      - app
+    networks:
+      - deprince-hub
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: deprince-hub-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: deprince
+      POSTGRES_USER: deprince
+      POSTGRES_PASSWORD: secret
+    ports:
+      - "5432:5432"
+    volumes:
+      - deprince-pgdata:/var/lib/postgresql/data
+    networks:
+      - deprince-hub
+
+  redis:
+    image: redis:7-alpine
+    container_name: deprince-hub-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - deprince-redis:/data
+    networks:
+      - deprince-hub
+
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: deprince-hub-mailhog
+    restart: unless-stopped
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    networks:
+      - deprince-hub
+
+volumes:
+  deprince-pgdata:
+  deprince-redis:
+
+networks:
+  deprince-hub:
+    driver: bridge

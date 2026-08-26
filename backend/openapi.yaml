@@ -1,0 +1,107 @@
+openapi: 3.0.3
+info:
+  title: DE-PRINCE HUB API
+  version: "1.0.0"
+servers:
+  - url: http://localhost:8080
+paths:
+  /api/ping:
+    get:
+      summary: Health check
+      responses:
+        "200":
+          description: OK
+  /api/auth/register:
+    post:
+      summary: Register user
+      responses:
+        "201":
+          description: Created
+  /api/auth/login:
+    post:
+      summary: Login user
+      responses:
+        "200":
+          description: OK
+  /api/auth/me:
+    get:
+      summary: Current user
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: OK
+  /api/pcs:
+    get:
+      summary: List PCs
+      responses:
+        "200":
+          description: OK
+  /api/sessions:
+    post:
+      summary: Start cyber session
+      security:
+        - bearerAuth: []
+      responses:
+        "201":
+          description: Created
+  /api/sessions/{session}/stop:
+    post:
+      summary: Stop cyber session and create invoice
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: session
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: OK
+  /api/payments/initiate:
+    post:
+      summary: Initiate payment
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: OK
+  /api/payments/verify/{gateway}:
+    get:
+      summary: Verify payment by gateway
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: gateway
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+  /api/webhooks/stripe:
+    post:
+      summary: Stripe webhook
+      responses:
+        "200":
+          description: OK
+  /api/webhooks/paystack:
+    post:
+      summary: Paystack webhook
+      responses:
+        "200":
+          description: OK
+  /api/webhooks/flutterwave:
+    post:
+      summary: Flutterwave webhook
+      responses:
+        "200":
+          description: OK
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
