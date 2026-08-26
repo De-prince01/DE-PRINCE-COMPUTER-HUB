@@ -12,6 +12,18 @@ class Invoice extends Model
 {
     use HasFactory;
 
+    /**
+     * All frontend routes reference invoices by their display number
+     * (e.g. INV-202608-000001), not the numeric id. Override Laravel's
+     * route-model binding key so {invoice} URLs resolve via the 
+umber
+     * column. Without this, InvoicePayPage always returns 404.
+     */
+    public function getRouteKeyName(): string
+    {
+        return 'number';
+    }
+
     protected $fillable = [
         'number', 'user_id', 'vendor_id', 'billable_type', 'billable_id',
         'subtotal', 'tax', 'discount', 'total', 'amount_paid', 'balance',
