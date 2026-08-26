@@ -31,6 +31,13 @@ Route::prefix('webhooks')->group(function () {
     Route::post('/flutterwave', [\App\Http\Controllers\Api\PaymentController::class, 'webhook'])->defaults('gateway', 'flutterwave');
 });
 
+// Payment verification endpoint.
+//  * POST  because PaymentRedirectPage.vue calls axios.post() here (old GET returned 405).
+//  * Public (no auth:sanctum)  because after a Flutterwave/Paystack/Stripe cross-site
+//    redirect the user's Sanctum token in localStorage may not yet be restored.
+//  Still safe: requires a real gateway transaction_id or tx_ref to succeed.
+Route::post('payments/verify/{gateway}', [\App\Http\Controllers\Api\PaymentController::class, 'verify']);
+
 Route::apiResource('vendors', \App\Http\Controllers\Api\VendorController::class)->only(['index', 'show']);
 Route::apiResource('pcs', \App\Http\Controllers\Api\PcController::class)->only(['index', 'show']);
 Route::apiResource('products', \App\Http\Controllers\Api\ProductController::class)->only(['index', 'show']);
@@ -62,5 +69,5 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('payments', [\App\Http\Controllers\Api\PaymentController::class, 'index']);
     Route::get('payments/{payment}', [\App\Http\Controllers\Api\PaymentController::class, 'show']);
     Route::post('payments/initiate', [\App\Http\Controllers\Api\PaymentController::class, 'initiate']);
-    Route::get('payments/verify/{gateway}', [\App\Http\Controllers\Api\PaymentController::class, 'verify']);
+    // NOTE: POST payments/verify/{gateway} lives OUTSIDE this auth:sanctum group (see above).
 });
